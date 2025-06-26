@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Unit Test Q 3 with Original JSON</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .pass { color: green; }
+    .fail { color: red; }
+    .test-result { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    .json-block { font-family: monospace; background: #f9f9f9; padding: 8px; margin-top: 5px; white-space: pre-wrap; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h3>Result Unit Test Q 3</h3>
+  <div id="test-results"></div>
+
+  <script type="text/javascript">
+    function extractNumbersFromObject(obj) {
+      let result = [];
+      for (const key in obj) {
+        if (typeof obj[key] === 'number') {
+          result.push(obj[key]);
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          result = result.concat(extractNumbersFromObject(obj[key]));
+        }
+      }
+      return result;
+    }
+
+    function assertEqual(actual, expected, label, originalData = null) {
+      const resultsDiv = document.getElementById('test-results');
+      const passed = JSON.stringify(actual) === JSON.stringify(expected);
+
+      const el = document.createElement('div');
+      el.className = `test-result ${passed ? 'pass' : 'fail'}`;
+
+      el.innerHTML = `
+        ${passed ? '✅' : '❌'} <strong>${label}</strong><br>
+        ${!passed ? `Expected: ${JSON.stringify(expected)}<br>` : ''}
+        Got: ${JSON.stringify(actual)}<br>
+        ${originalData !== null 
+          ? `<div class="json-block"><strong>Original Data:</strong><br>${JSON.stringify(originalData, null, 2)}</div>` 
+          : ''
+        }
+      `;
+
+      resultsDiv.appendChild(el);
+    }
+
+    function runTests() {
+      const nestedObject = {
+        outer: 2,
+        obj: {
+          inner: 5,
+          otherObj: {
+            superInner: 1,
+            notANumber: true,
+            alsoNotANumber: "yup"
+          }
+        }
+      };
+
+      const input2 = {
+        a: 2,
+        b: { b: 2, bb: { b: 3, bb: { b: 2 } } },
+        c: { c: { c: 2 }, cc: 'ball', ccc: 5 },
+        d: 1,
+        e: { e: { e: 4 }, ee: 'car' },
+      };
+
+      const extract1 = extractNumbersFromObject(nestedObject);
+      const extract2 = extractNumbersFromObject(input2);
+      const sum1 = extract1.reduce((a, b) => a + b, 0);
+      const sum2 = extract2.reduce((a, b) => a + b, 0);
+
+      // Test array contents
+      assertEqual(extract1, [2, 5, 1], 'Test nestedObject extraction', nestedObject);
+      assertEqual(extract2, [2, 2, 3, 2, 2, 5, 1, 4], 'Test input2 extraction', input2);
+
+      // Test total sums
+      assertEqual(sum1, 8, 'Sum of nestedObject values', extract1);
+      assertEqual(sum2, 21, 'Sum of input2 values', extract2);
+    }
+
+    runTests();
+  </script>
+</body>
+</html>
